@@ -14,8 +14,11 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 io.on('connection', function(socket) {
     console.log(++users + " users connected");
+    if (users == 2) {
+        io.emit('start');
+    }
     socket.on('move', function(x, y) {
-        // emit position to other players
+        socket.broadcast.emit('move', x, y)
     });
     socket.on('disconnect', function(){
         console.log(--users + " users connected");
