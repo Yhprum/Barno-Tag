@@ -1,0 +1,19 @@
+{
+  "name": "barno-tag",
+  "version": "1.0.0",
+  "description": "A frantic 4-player tag game",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "author": "Ryan Murphy",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.15.2",
+    "socket.io": "^2.0.4"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/yhprum/barno-tag.git"
+  }
+}
