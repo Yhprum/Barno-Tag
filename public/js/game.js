@@ -1,4 +1,5 @@
 $(document).ready(function() {
+    var socket = io();
     // Game variables
     var context = document.getElementById('canvas').getContext("2d");
 
@@ -80,9 +81,10 @@ $(document).ready(function() {
     function update() {
         if (!moving && (up||down||left||right)) {
             if (map[y + down - up][x + right - left] == 0) {
-                direction = [right-left, down-up]
+                direction = [right-left, down-up];
                 x += direction[0];
                 y += direction[1];
+                socket.emit('move', x, y);
                 move(direction);
                 moving = true;
             }
