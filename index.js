@@ -5,6 +5,8 @@ var io = require('socket.io')(http);
 var path = require("path");
 
 var users = 0;
+var usernums  = [];
+var game = [];
 
 app.get('/', function(req, res) {
     res.sendFile(__dirname + '/index.html');
@@ -13,12 +15,25 @@ app.get('/', function(req, res) {
 app.use(express.static(path.join(__dirname, 'public')));
 
 io.on('connection', function(socket) {
-    console.log(++users + " users connected");
-    if (users == 2) {
-        io.emit('start');
+    usernums[users] = socket.id;
+    game[users] = {
+        x: 1,
+        y: 1,
+        oldx: 1,
+        oldy: 1,
+        i: 0,
+        moving: 0,
+        direction: 0
     }
-    socket.on('move', function(x, y) {
-        socket.broadcast.emit('move', x, y)
+    console.log(++users + " users connected");
+    if (users == 3) {
+        console.log('starting')
+        for (var i = 0; i < users; i++) {
+            io.to(usernums[i]).emit('start', game, i)
+        };
+    }
+    socket.on('move', function(x, y, usernum) {
+        socket.broadcast.emit('move', x, y, usernum)
     });
     socket.on('disconnect', function(){
         console.log(--users + " users connected");

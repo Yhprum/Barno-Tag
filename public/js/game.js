@@ -1,5 +1,4 @@
 $(document).ready(function() {
-    var socket = io();
     // Game variables
     var context = document.getElementById('canvas').getContext("2d");
 
@@ -12,6 +11,7 @@ $(document).ready(function() {
     maze.onload = function () {
         context.drawImage(maze, 0, 0, 1024, 704);
     }
+    context.fillStyle = "red";
 
     var map = [
         [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
@@ -27,27 +27,18 @@ $(document).ready(function() {
         [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
     ];
 
+
+    var socket = io();
     //user variables
     var up = 0, down = 0, left = 0, right = 0;
+    socket.on('test', function() {
+        console.log('test')
+    })
 
-    var maze = new Image();
-    maze.src = "images/mazeBig.png";
-    maze.onload = function () {
-        context.drawImage(maze, 0, 0, 1024, 704);
-    }
-
-    socket.on('start', function() {
-        var x = [1, 1];
-        var y = [1, 1];
-        var oldx = [1, 1];
-        var oldy = [1, 1];
-        var i = [0, 0];
-        var moving = [0, 0];
+    socket.on('start', function(users, usernum) {
+        console.log(users)
+        console.log(usernum)
         var direction = [0, 0];
-        startGame(x, y, oldx, oldy, i, moving, direction);
-    });
-
-    function startGame(x, y, oldx, oldy, i, moving, direction) {
         document.onkeydown = function(e) {
             e = e || window.event;
             if (e.keyCode == '38') {
@@ -81,42 +72,42 @@ $(document).ready(function() {
         }
         function move(mdirection) {
             context.drawImage(maze, 0, 0, 1024, 704);
-            for (let j = 0; j < moving.length; j++) {
-                if (moving[j]) {
-                    context.fillStyle = "red";
-                    context.fillRect(oldx[j]*64 + i[j]*mdirection[0] + 16, oldy[j]*64 + i[j]*mdirection[1] + 16, 32, 32);
-                    if (i[j]++ >= 64) {
+            for (let j = 0; j < Object.keys(users).length; j++) {
+                if (users[j]['moving']) {
+                    context.fillRect(users[j]['oldx']*64 + users[j]['i']*mdirection[0] + 16, users[j]['oldy']*64 + users[j]['i']*mdirection[1] + 16, 32, 32);
+                    if (users[j]['i']++ >= 64) {
                         updatePosition(j);
                     }
                 } else {
-                    context.fillRect(x[j]*64 + 16, y[j]*64 + 16, 32, 32);
+                    context.fillRect(users[j]['x']*64 + 16, users[j]['y']*64 + 16, 32, 32);
                 }
             }
         }
         window.setInterval(update, 5); // change to global speed for easy changing?
 
         function update() {
-            if (!moving[0] && (up||down||left||right)) {
-                if (map[y[0] + down - up][x[0] + right - left] == 0) {
+            if (!users[usernum]['moving'] && (up||down||left||right)) {
+                if (map[users[usernum]['y'] + down - up][users[usernum]['x'] + right - left] == 0) {
                     direction = [right-left, down-up];
-                    x[0] += direction[0];
-                    y[0] += direction[1];
-                    socket.emit('move', x[0], y[0]);
-                    moving[0] = 1;
+                    users[usernum]['x'] += direction[0];
+                    users[usernum]['y'] += direction[1];
+                    socket.emit('move', users[usernum]['x'], users[usernum]['y'], usernum);
+                    users[usernum]['moving'] = 1;
                 }
             } else {
                 move(direction);
             }
         }
         function updatePosition(j) {
-            i[j] = 0;
-            moving[j] = 0;
-            oldx[j] = x[j];
-            oldy[j] = y[j];
+            users[j]['i'] = 0;
+            users[j]['moving'] = 0;
+            users[j]['oldx'] = users[j]['x'];
+            users[j]['oldy'] = users[j]['y'];
         }
-        socket.on('move', function(x1, y1) {
-            x[1] = x1;
-            y[1] = y1;
+        socket.on('move', function(x1, y1, user) {
+            users[user]['x'] = x1;
+            users[user]['y'] = y1;
+            users[user]['moving'] = 1;
         });
-    }
+    });
 });
