@@ -1,12 +1,12 @@
-var express = require('express');
-var app = express();
-var http = require('http').Server(app);
-var io = require('socket.io')(http);
-var path = require("path");
+const express = require('express');
+const app = express();
+const http = require('http').Server(app);
+const io = require('socket.io')(http);
+const path = require("path");
 
-var users = 0;
-var usernums  = [];
-var game = [];
+let users = 0;
+const usernums  = [];
+const game = [];
 
 app.get('/', function(req, res) {
     res.sendFile(__dirname + '/index.html');
@@ -24,16 +24,16 @@ io.on('connection', function(socket) {
         i: 0,
         moving: 0,
         direction: 0
-    }
+    };
     console.log(++users + " users connected");
-    if (users == 3) {
-        console.log('starting')
+    if (users === 2) {
+        console.log('starting');
         for (var i = 0; i < users; i++) {
             io.to(usernums[i]).emit('start', game, i)
-        };
+        }
     }
-    socket.on('move', function(x, y, usernum) {
-        socket.broadcast.emit('move', x, y, usernum)
+    socket.on('move', function(x, y, direction, usernum) {
+        socket.broadcast.emit('move', x, y, direction, usernum);
     });
     socket.on('disconnect', function(){
         console.log(--users + " users connected");
